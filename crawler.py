@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from colorama import Fore, Style, init
+import time
 
 init(autoreset=True)
 
@@ -22,6 +23,19 @@ def prompt_for_link():
         except KeyboardInterrupt:
             print(Fore.RED + "\nProcess interrupted. Please provide a new link or type 'exit'.")
 
+def prompt_for_delay():
+    """Prompt the user for a delay between requests."""
+    while True:
+        try:
+            delay = float(input(Fore.CYAN + "Enter delay in seconds between requests (e.g., 0.5): ").strip())
+            if delay >= 0:
+                return delay
+            print(Fore.RED + "Delay must be a non-negative number.")
+        except ValueError:
+            print(Fore.RED + "Invalid input. Please enter a number.")
+        except KeyboardInterrupt:
+            print(Fore.RED + "\nProcess interrupted. Please provide a delay time.")
+
 def save_links(link):
     """Append a unique .net or .com link to sites_found.txt."""
     with open(output_file, 'a') as file:
@@ -34,10 +48,10 @@ def crawl_website(url, visited_links, links_to_visit):
         response = requests.get(url, timeout=5)
         response.raise_for_status()
 
-        bandwidth_used = len(response.content) / (1024 * 1024)
+        bandwidth_used = len(response.text.encode('utf-8')) / (1024 * 1024)
         total_bandwidth += bandwidth_used
 
-        soup = BeautifulSoup(response.content, 'html.parser')
+        soup = BeautifulSoup(response.text, 'html.parser')
 
         for a_tag in soup.find_all('a', href=True):
             href = a_tag['href']
@@ -70,6 +84,7 @@ while True:
     try:
         visited_links = set()
         links_to_visit = {prompt_for_link()}
+        delay = prompt_for_delay()
 
         while links_to_visit:
             url = links_to_visit.pop()
@@ -79,6 +94,7 @@ while True:
                 if crawl_website(url, visited_links, links_to_visit):
                     save_links(url)
                     print(Fore.YELLOW + f"Total bandwidth used: {total_bandwidth:.2f} MB")
+                time.sleep(delay)
 
         print(Fore.GREEN + "Crawling completed.")
         
