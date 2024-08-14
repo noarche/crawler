@@ -89,17 +89,17 @@ while True:
         while links_to_visit:
             url = links_to_visit.pop()
             if url not in visited_links:
-                print(Fore.GREEN + f"Crawling: {url}")
+                print(Fore.BLUE + f"Crawling: {url}")
                 visited_links.add(url)
                 if crawl_website(url, visited_links, links_to_visit):
                     save_links(url)
-                    print(Fore.YELLOW + f"Total bandwidth used: {total_bandwidth:.2f} MB")
+                    print(Fore.RED + f"Total bandwidth used: {total_bandwidth:.2f} MB")
                 time.sleep(delay)
 
         print(Fore.GREEN + "Crawling completed.")
         
     except KeyboardInterrupt:
-        print(Fore.RED + "\nProcess interrupted. Let's add another link.")
+        print(Fore.YELLOW + "\nProcess interrupted. Let's add another link.")
         continue
     except Exception as e:
         print(Fore.RED + f"\nScript crashed: {e}. Please provide a new link.")
