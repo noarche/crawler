@@ -27,7 +27,10 @@ def prompt_for_delay():
     """Prompt the user for a delay between requests."""
     while True:
         try:
-            delay = float(input(Fore.CYAN + "Enter delay in seconds between requests (e.g., 0.5): ").strip())
+            delay_input = input(Fore.CYAN + "Enter delay in seconds between requests (e.g., 0.5, leave empty for 0.03): ").strip()
+            if delay_input == '':
+                return 0.03  # Default to 0.03 if input is empty
+            delay = float(delay_input)
             if delay >= 0:
                 return delay
             print(Fore.RED + "Delay must be a non-negative number.")
@@ -65,6 +68,7 @@ def crawl_website(url, visited_links, links_to_visit):
                 parsed_url.netloc.endswith('.net') or
                 parsed_url.netloc.endswith('.com') or
                 parsed_url.netloc.endswith('.edu') or
+                parsed_url.netloc.endswith('.org') or
                 parsed_url.netloc.endswith('.gov') or
                 parsed_url.netloc.endswith('.io') or
                 parsed_url.netloc.endswith('.it') or
