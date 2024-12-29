@@ -3,6 +3,10 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from colorama import Fore, Style, init
 import time
+import random
+
+# Assuming user_agents.py contains a list named USER_AGENTS
+from user_agents import USER_AGENTS
 
 init(autoreset=True)
 
@@ -44,11 +48,16 @@ def save_links(link):
     with open(output_file, 'a') as file:
         file.write(link + '\n')
 
+def get_random_user_agent():
+    """Return a random user agent from the USER_AGENTS list."""
+    return random.choice(USER_AGENTS)
+
 def crawl_website(url, visited_links, links_to_visit):
     """Crawl a website and extract all the .net and .com links."""
     global total_bandwidth
     try:
-        response = requests.get(url, timeout=5)
+        headers = {"User-Agent": get_random_user_agent()}
+        response = requests.get(url, headers=headers, timeout=5)
         response.raise_for_status()
 
         bandwidth_used = len(response.text.encode('utf-8')) / (1024 * 1024)
