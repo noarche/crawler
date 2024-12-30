@@ -6,6 +6,8 @@ import time
 import random
 import argparse
 from user_agents import USER_AGENTS
+import os
+import signal
 
 main_logo = ''' 
 
@@ -24,7 +26,7 @@ infoabt = '''
  \033[92m  This script crawls links. Originally created to gather links for Noisy.py\033[0m
  \033[32m   To view noisy script visit github.com/noarche/noisy\033[0m
  \033[33m   For more information run with -help flag. \033[0m
- \033[33m   To load domains from list run with -i textfile.txt \033[0m
+ \033[33m   To load domains from list run with -i textfile.txt or type 'filename.txt' instead of 'website.com'\033[0m
  \033[96m   Enter a starting link..\033[0m
  \033[36m   Enter a sleep time. Leave blank and press enter for very fast.\033[0m
 '''
@@ -36,39 +38,50 @@ init(autoreset=True)
 
 output_file = 'sites_found.txt'
 total_bandwidth = 0
-MAX_REQUESTS_PER_LINK = 125
-DEFAULT_MAX_LINKS = 20
-paused = False
+MAX_REQUESTS_PER_LINK = 500
+DEFAULT_MAX_LINKS = 500
+manual_change_triggered = False
+
+exit_flag = False
+last_interrupt_time = 0
+
+
+def signal_handler(signum, frame):
+    global exit_flag, last_interrupt_time
+    current_time = time.time()
+    if current_time - last_interrupt_time < 1:  # Second Ctrl+C within 1 second
+        exit_flag = True
+        print(Fore.RED + "\nExiting program...")
+        exit()
+    last_interrupt_time = current_time
+    print(Fore.YELLOW + "\nInterrupt received. Press Ctrl+C again quickly to exit.")
+
+signal.signal(signal.SIGINT, signal_handler)
 
 def parse_arguments():
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Crawl and extract links from provided URLs.")
     parser.add_argument('-i', '--input', type=str, help="Path to a text file containing URLs (one per line).")
-    parser.add_argument('-help', action='store_true', help="Display detailed help information.")
+    parser.add_argument('-help', action='store_true', help="Show detailed help information about the script.")
     return parser.parse_args()
 
 def show_help():
     """Display help information."""
     help_text = """
-    Link Crawler Script:
+    This script crawls websites and extracts links matching the original TLD of the provided domains. 
 
-    Description:
-        This script crawls provided URLs to extract links that match the same top-level domain (TLD).
-        Results are saved in 'sites_found.txt'.
-
-    Arguments:
-        -i, --input: Path to a text file containing URLs (one URL per line).
-        -help: Display this help message.
+    Features:
+      - Takes input as a comma-separated list of URLs or reads from a file (one URL per line).
+      - Allows setting a delay between requests.
+      - Limits the number of links to parse per URL.
+      - Saves found links to a file (sites_found.txt).
 
     Usage:
-        python crawler.py
-        python crawler.py -i input.txt
+      - Provide URLs as input separated by commas, or type 'domains.txt' to read from a file.
+      - Use -i argument to specify a file containing domains.
 
-    During Execution:
-        - Type 'pause' to pause the crawling process.
-        - Type 'resume' to resume the crawling process.
     """
-    print(help_text)
+    print(Fore.CYAN + help_text)
 
 def prompt_for_links(file_path=None):
     """Prompt the user for starting links or exit command."""
@@ -80,13 +93,16 @@ def prompt_for_links(file_path=None):
         except FileNotFoundError:
             print(Fore.RED + f"File not found: {file_path}")
             exit()
-    
+
     while True:
         try:
-            user_input = input(Fore.CYAN + "Enter starting links (comma-separated) or type 'exit': ").strip()
-            if user_input.lower() == 'exit':
-                print(Fore.RED + "Exiting program.")
-                exit()
+            user_input = input(Fore.CYAN + "Enter starting links (comma-separated) or type a '.txt' file name: ").strip()
+            if user_input.lower().endswith('.txt'):
+                if os.path.isfile(user_input):
+                    return prompt_for_links(user_input)
+                else:
+                    print(Fore.RED + f"File not found: {user_input}")
+                    continue
             links = [link.strip() if link.startswith("http") else "https://" + link.strip() for link in user_input.split(',')]
             return links
         except KeyboardInterrupt:
@@ -98,15 +114,13 @@ def prompt_for_delay():
         try:
             delay_input = input(Fore.CYAN + "Enter delay in seconds between requests (leave empty for 0.01): ").strip()
             if delay_input == '':
-                return 0.01  # Default to 0.01 if input is empty
+                return 0.02  # Default to 0.01 if input is empty
             delay = float(delay_input)
             if delay >= 0:
                 return delay
             print(Fore.RED + "Delay must be a non-negative number.")
         except ValueError:
             print(Fore.RED + "Invalid input. Please enter a number.")
-        except KeyboardInterrupt:
-            print(Fore.RED + "\nProcess interrupted. Please provide a delay time.")
 
 def prompt_for_max_links():
     """Prompt the user for the maximum number of links to parse per URL."""
@@ -121,8 +135,6 @@ def prompt_for_max_links():
             print(Fore.RED + "The maximum number of links must be a positive integer.")
         except ValueError:
             print(Fore.RED + "Invalid input. Please enter an integer.")
-        except KeyboardInterrupt:
-            print(Fore.RED + "\nProcess interrupted. Please provide a valid number.")
 
 def save_links(link):
     """Append a unique .net or .com link to sites_found.txt."""
@@ -178,17 +190,15 @@ while True:
         max_links_per_url = prompt_for_max_links()
 
         while links_to_visit:
+            if exit_flag:
+                exit()
+
             url = links_to_visit.pop()
             request_count = 0
             parsed_links_count = 0
             original_tld = '.' + urlparse(url).netloc.split('.')[-1]
 
             while url not in visited_links and request_count < MAX_REQUESTS_PER_LINK and parsed_links_count < max_links_per_url:
-                if paused:
-                    input(Fore.YELLOW + "Paused. Press Enter to resume.")
-                    paused = False
-                    continue
-
                 print(Fore.BLUE + f"Crawling: {url}")
                 visited_links.add(url)
                 if crawl_website(url, visited_links, links_to_visit, original_tld):
