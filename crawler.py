@@ -38,23 +38,17 @@ init(autoreset=True)
 
 output_file = 'sites_found.txt'
 total_bandwidth = 0
-MAX_REQUESTS_PER_LINK = 500
-DEFAULT_MAX_LINKS = 500
-manual_change_triggered = False
+MAX_REQUESTS_PER_LINK = 99999
+DEFAULT_MAX_LINKS = 99999
 
 exit_flag = False
-last_interrupt_time = 0
+restart_flag = False
 
 
 def signal_handler(signum, frame):
-    global exit_flag, last_interrupt_time
-    current_time = time.time()
-    if current_time - last_interrupt_time < 1:  # Second Ctrl+C within 1 second
-        exit_flag = True
-        print(Fore.RED + "\nExiting program...")
-        exit()
-    last_interrupt_time = current_time
-    print(Fore.YELLOW + "\nInterrupt received. Press Ctrl+C again quickly to exit.")
+    global restart_flag
+    print(Fore.YELLOW + "\nInterrupt received. Returning to the main menu.")
+    restart_flag = True
 
 signal.signal(signal.SIGINT, signal_handler)
 
@@ -96,7 +90,9 @@ def prompt_for_links(file_path=None):
 
     while True:
         try:
-            user_input = input(Fore.CYAN + "Enter starting links (comma-separated) or type a '.txt' file name: ").strip()
+            user_input = input(Fore.CYAN + "Enter starting links (comma-separated) or type a '.txt' file name (type 'exit' to quit): ").strip()
+            if user_input.lower() == 'exit':
+                exit()
             if user_input.lower().endswith('.txt'):
                 if os.path.isfile(user_input):
                     return prompt_for_links(user_input)
@@ -106,15 +102,18 @@ def prompt_for_links(file_path=None):
             links = [link.strip() if link.startswith("http") else "https://" + link.strip() for link in user_input.split(',')]
             return links
         except KeyboardInterrupt:
-            print(Fore.RED + "\nProcess interrupted. Please provide valid links or type 'exit'.")
+            print(Fore.RED + "\nProcess interrupted. Returning to the main menu.")
+            return []
 
 def prompt_for_delay():
     """Prompt the user for a delay between requests."""
     while True:
         try:
-            delay_input = input(Fore.CYAN + "Enter delay in seconds between requests (leave empty for 0.01): ").strip()
+            delay_input = input(Fore.CYAN + "Enter delay in seconds between requests (leave empty for 0.02, type 'exit' to quit): ").strip()
+            if delay_input.lower() == 'exit':
+                exit()
             if delay_input == '':
-                return 0.02  # Default to 0.01 if input is empty
+                return 0.02
             delay = float(delay_input)
             if delay >= 0:
                 return delay
@@ -127,6 +126,8 @@ def prompt_for_max_links():
     while True:
         try:
             max_links_input = input(Fore.CYAN + f"Enter the maximum number of links to parse per URL (leave empty for {DEFAULT_MAX_LINKS}): ").strip()
+            if max_links_input.lower() == 'exit':
+                exit()
             if max_links_input == '':
                 return DEFAULT_MAX_LINKS
             max_links = int(max_links_input)
@@ -150,7 +151,7 @@ def crawl_website(url, visited_links, links_to_visit, original_tld):
     global total_bandwidth
     try:
         headers = {"User-Agent": get_random_user_agent()}
-        response = requests.get(url, headers=headers, timeout=5)
+        response = requests.get(url, headers=headers, timeout=2.69)
         response.raise_for_status()
 
         bandwidth_used = len(response.text.encode('utf-8')) / (1024 * 1024)
@@ -160,7 +161,7 @@ def crawl_website(url, visited_links, links_to_visit, original_tld):
 
         for a_tag in soup.find_all('a', href=True):
             href = a_tag['href']
-            if any(href.endswith(ext) for ext in ['.ico', '.png', '.jpg', '.webp', '.webm', '.pdf', '.doc', '.docx', '.svg', '.jpeg', '.json', '.onion', '.i2p', '.safetensors', '.rar', '.zip', '.gguf', '.ggml', '.shp', '.gif', '.avi', '.mp3', '.wav', '.mkv', '.mp4', '.m4a', '.flac', '.ogg', '.opus', '.avif', '.hc', '.tc', '.xyz', '.exe', '.msi', '.tar', '.7z', '.tif', '.css', '.csv']):
+            if any(href.endswith(ext) for ext in ['.ico', '.png', '.jpg', '.webp', '.webm', '.pdf', '.gif', '.doc', '.docx', '.svg', '.iso', '.ts', '.srt', '.jpeg', '.json', '.onion', '.i2p', '.safetensors', '.rar', '.zip', '.gguf', '.ggml', '.shp', '.gif', '.avi', '.mp3', '.wav', '.mkv', '.mov', '.heif', '.heic', '.txt', '.xml', '.js', '.m4b', '.mp4', '.m4a', '.flac', '.ogg', '.opus', '.avif', '.hc', '.tc', '.xyz', '.exe', '.msi', '.tar', '.7z', '.tif', '.css', '.csv']):
                 continue  
 
             full_url = urljoin(url, href)
@@ -186,13 +187,13 @@ while True:
     try:
         visited_links = set()
         links_to_visit = set(prompt_for_links(args.input))
+        if not links_to_visit:
+            continue
+
         delay = prompt_for_delay()
         max_links_per_url = prompt_for_max_links()
 
-        while links_to_visit:
-            if exit_flag:
-                exit()
-
+        while links_to_visit and not restart_flag:
             url = links_to_visit.pop()
             request_count = 0
             parsed_links_count = 0
@@ -208,12 +209,13 @@ while True:
                 time.sleep(delay)
                 request_count += 1
 
-        print(Fore.GREEN + "Crawling completed.")
-        print(Fore.CYAN + "Returning to main menu.")
-        break
-        
+        if restart_flag:
+            restart_flag = False
+            print(Fore.CYAN + "Returning to the main menu.")
+
     except KeyboardInterrupt:
-        print(Fore.YELLOW + "\nProcess interrupted. Let's add another link.")
+        print(Fore.YELLOW + "\nProcess interrupted. Returning to the main menu.")
+        restart_flag = True
         continue
     except Exception as e:
         print(Fore.RED + f"\nScript crashed: {e}. Please provide a new link.")
