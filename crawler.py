@@ -12,10 +12,24 @@ from blacklist import is_blacklisted, manage_blacklist
 
 main_logo = ''' 
 
-crawler hello
+ [91m_[0m[93m_[0m[92m_[0m[96m_[0m           [94m_[0m[95m_[0m[91m_[0m[93m_[0m[92m_[0m[96m_[0m               [94m_[0m[95m_[0m              [91m_[0m[93m_[0m[92m_[0m[96m_[0m       
+[94m/[0m[95m\[0m  [91m_[0m[93m`[0m[92m\[0m        [96m/[0m[94m\[0m  [95m_[0m  [91m\[0m             [93m/[0m[92m\[0m [96m\[0m            [94m/[0m[95m\[0m  [91m_[0m[93m`[0m[92m\[0m     
+[96m\[0m [94m\[0m [95m\[0m[91m/[0m[93m\[0m[92m_[0m[96m\[0m  [94m_[0m [95m_[0m[91m_[0m[93m\[0m [92m\[0m [96m\[0m[94mL[0m[95m\[0m [91m\[0m  [93m_[0m[92m_[0m  [96m_[0m[94m_[0m  [95m_[0m[91m_[0m[93m\[0m [92m\[0m [96m\[0m         [94m_[0m[95m_[0m[91m\[0m [93m\[0m [92m\[0m[96mL[0m[94m\[0m [95m\[0m   
+ [91m\[0m [93m\[0m [92m\[0m[96m/[0m[94m_[0m[95m/[0m[91m_[0m[93m/[0m[92m\[0m[96m`[0m[94m'[0m[95m_[0m[91m_[0m[93m\[0m [92m\[0m  [96m_[0m[94m_[0m [95m\[0m[91m/[0m[93m\[0m [92m\[0m[96m/[0m[94m\[0m [95m\[0m[91m/[0m[93m\[0m [92m\[0m[96m\[0m [94m\[0m [95m\[0m  [91m_[0m[93m_[0m  [92m/[0m[96m'[0m[94m_[0m[95m_[0m[91m`[0m[93m\[0m [92m\[0m [96m,[0m  [94m/[0m   
+  [95m\[0m [91m\[0m [93m\[0m[92mL[0m[96m\[0m [94m\[0m [95m\[0m [91m\[0m[93m/[0m [92m\[0m [96m\[0m [94m\[0m[95m/[0m[91m\[0m [93m\[0m [92m\[0m [96m\[0m[94m_[0m[95m/[0m [91m\[0m[93m_[0m[92m/[0m [96m\[0m[94m\[0m [95m\[0m [91m\[0m[93mL[0m[92m\[0m [96m\[0m[94m/[0m[95m\[0m  [91m_[0m[93m_[0m[92m/[0m[96m\[0m [94m\[0m [95m\[0m[91m\[0m [93m\[0m  
+   [92m\[0m [96m\[0m[94m_[0m[95m_[0m[91m_[0m[93m_[0m[92m/[0m[96m\[0m [94m\[0m[95m_[0m[91m\[0m  [93m\[0m [92m\[0m[96m_[0m[94m\[0m [95m\[0m[91m_[0m[93m\[0m [92m\[0m[96m_[0m[94m_[0m[95m_[0m[91mx[0m[93m_[0m[92m_[0m[96m_[0m[94m/[0m[95m'[0m [91m\[0m [93m\[0m[92m_[0m[96m_[0m[94m_[0m[95m_[0m[91m/[0m[93m\[0m [92m\[0m[96m_[0m[94m_[0m[95m_[0m[91m_[0m[93m\[0m[92m\[0m [96m\[0m[94m_[0m[95m\[0m [91m\[0m[93m_[0m[92m\[0m
+    [96m\[0m[94m/[0m[95m_[0m[91m_[0m[93m_[0m[92m/[0m  [96m\[0m[94m/[0m[95m_[0m[91m/[0m   [93m\[0m[92m/[0m[96m_[0m[94m/[0m[95m\[0m[91m/[0m[93m_[0m[92m/[0m[96m\[0m[94m/[0m[95m_[0m[91m_[0m[93m/[0m[92m/[0m[96m_[0m[94m_[0m[95m/[0m    [91m\[0m[93m/[0m[92m_[0m[96m_[0m[94m_[0m[95m/[0m  [91m\[0m[93m/[0m[92m_[0m[96m_[0m[94m_[0m[95m_[0m[91m/[0m [93m\[0m[92m/[0m[96m_[0m[94m/[0m[95m\[0m[91m/[0m [93m/[0m                                                              
+\033[92m   github.com/noarche/crawler   \033[0m                                                                
+\033[92m   Build Date: Dec. 30 2024\033[0m
+\033[93m   Version 6.9\033[0m
 '''
 infoabt = ''' 
-Explain what script does, about, help.
+ \033[92m  This script crawls links. Originally created to gather links for Noisy.py\033[0m
+ \033[32m   To view noisy script visit github.com/noarche/noisy\033[0m
+ \033[33m   For more information run with -help flag. \033[0m
+ \033[33m   To load domains from list run with -i textfile.txt or type 'filename.txt' instead of 'website.com'\033[0m
+ \033[96m   Enter a starting link..\033[0m
+ \033[36m   Enter a sleep time. Leave blank and press enter for very fast.\033[0m
 '''
 
 print(main_logo)
