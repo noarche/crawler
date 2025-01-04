@@ -1,10 +1,8 @@
-![image](https://github.com/user-attachments/assets/46ea2a40-4652-4ac6-9743-f6cdd528c425)
-
-![image](https://github.com/user-attachments/assets/ae8635f6-12ab-4ac9-8abb-7fca88c99e6c)
-
+Simple![seekr2](https://github.com/user-attachments/assets/33efc3f5-0bec-4931-944e-e63734dfdcb8)
 # URL Crawler
 
-Simple solid Url crawler spider
+
+ solid Url crawler spider
 
 
 ## Docker 
