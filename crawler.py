@@ -8,27 +8,14 @@ import argparse
 from user_agents import USER_AGENTS
 import os
 import signal
+from blacklist import is_blacklisted, manage_blacklist
 
 main_logo = ''' 
 
- [91m_[0m[93m_[0m[92m_[0m[96m_[0m           [94m_[0m[95m_[0m[91m_[0m[93m_[0m[92m_[0m[96m_[0m               [94m_[0m[95m_[0m              [91m_[0m[93m_[0m[92m_[0m[96m_[0m       
-[94m/[0m[95m\[0m  [91m_[0m[93m`[0m[92m\[0m        [96m/[0m[94m\[0m  [95m_[0m  [91m\[0m             [93m/[0m[92m\[0m [96m\[0m            [94m/[0m[95m\[0m  [91m_[0m[93m`[0m[92m\[0m     
-[96m\[0m [94m\[0m [95m\[0m[91m/[0m[93m\[0m[92m_[0m[96m\[0m  [94m_[0m [95m_[0m[91m_[0m[93m\[0m [92m\[0m [96m\[0m[94mL[0m[95m\[0m [91m\[0m  [93m_[0m[92m_[0m  [96m_[0m[94m_[0m  [95m_[0m[91m_[0m[93m\[0m [92m\[0m [96m\[0m         [94m_[0m[95m_[0m[91m\[0m [93m\[0m [92m\[0m[96mL[0m[94m\[0m [95m\[0m   
- [91m\[0m [93m\[0m [92m\[0m[96m/[0m[94m_[0m[95m/[0m[91m_[0m[93m/[0m[92m\[0m[96m`[0m[94m'[0m[95m_[0m[91m_[0m[93m\[0m [92m\[0m  [96m_[0m[94m_[0m [95m\[0m[91m/[0m[93m\[0m [92m\[0m[96m/[0m[94m\[0m [95m\[0m[91m/[0m[93m\[0m [92m\[0m[96m\[0m [94m\[0m [95m\[0m  [91m_[0m[93m_[0m  [92m/[0m[96m'[0m[94m_[0m[95m_[0m[91m`[0m[93m\[0m [92m\[0m [96m,[0m  [94m/[0m   
-  [95m\[0m [91m\[0m [93m\[0m[92mL[0m[96m\[0m [94m\[0m [95m\[0m [91m\[0m[93m/[0m [92m\[0m [96m\[0m [94m\[0m[95m/[0m[91m\[0m [93m\[0m [92m\[0m [96m\[0m[94m_[0m[95m/[0m [91m\[0m[93m_[0m[92m/[0m [96m\[0m[94m\[0m [95m\[0m [91m\[0m[93mL[0m[92m\[0m [96m\[0m[94m/[0m[95m\[0m  [91m_[0m[93m_[0m[92m/[0m[96m\[0m [94m\[0m [95m\[0m[91m\[0m [93m\[0m  
-   [92m\[0m [96m\[0m[94m_[0m[95m_[0m[91m_[0m[93m_[0m[92m/[0m[96m\[0m [94m\[0m[95m_[0m[91m\[0m  [93m\[0m [92m\[0m[96m_[0m[94m\[0m [95m\[0m[91m_[0m[93m\[0m [92m\[0m[96m_[0m[94m_[0m[95m_[0m[91mx[0m[93m_[0m[92m_[0m[96m_[0m[94m/[0m[95m'[0m [91m\[0m [93m\[0m[92m_[0m[96m_[0m[94m_[0m[95m_[0m[91m/[0m[93m\[0m [92m\[0m[96m_[0m[94m_[0m[95m_[0m[91m_[0m[93m\[0m[92m\[0m [96m\[0m[94m_[0m[95m\[0m [91m\[0m[93m_[0m[92m\[0m
-    [96m\[0m[94m/[0m[95m_[0m[91m_[0m[93m_[0m[92m/[0m  [96m\[0m[94m/[0m[95m_[0m[91m/[0m   [93m\[0m[92m/[0m[96m_[0m[94m/[0m[95m\[0m[91m/[0m[93m_[0m[92m/[0m[96m\[0m[94m/[0m[95m_[0m[91m_[0m[93m/[0m[92m/[0m[96m_[0m[94m_[0m[95m/[0m    [91m\[0m[93m/[0m[92m_[0m[96m_[0m[94m_[0m[95m/[0m  [91m\[0m[93m/[0m[92m_[0m[96m_[0m[94m_[0m[95m_[0m[91m/[0m [93m\[0m[92m/[0m[96m_[0m[94m/[0m[95m\[0m[91m/[0m [93m/[0m                                                              
-\033[92m   github.com/noarche/crawler   \033[0m                                                                
-\033[92m   Build Date: Dec. 30 2024\033[0m
-\033[93m   Version 6.9\033[0m
+crawler hello
 '''
 infoabt = ''' 
- \033[92m  This script crawls links. Originally created to gather links for Noisy.py\033[0m
- \033[32m   To view noisy script visit github.com/noarche/noisy\033[0m
- \033[33m   For more information run with -help flag. \033[0m
- \033[33m   To load domains from list run with -i textfile.txt or type 'filename.txt' instead of 'website.com'\033[0m
- \033[96m   Enter a starting link..\033[0m
- \033[36m   Enter a sleep time. Leave blank and press enter for very fast.\033[0m
+Explain what script does, about, help.
 '''
 
 print(main_logo)
@@ -38,8 +25,8 @@ init(autoreset=True)
 
 output_file = 'sites_found.txt'
 total_bandwidth = 0
-MAX_REQUESTS_PER_LINK = 99999
-DEFAULT_MAX_LINKS = 99999
+MAX_REQUESTS_PER_LINK = 999999
+DEFAULT_MAX_LINKS = 999999
 
 exit_flag = False
 restart_flag = False
@@ -146,9 +133,33 @@ def get_random_user_agent():
     """Return a random user agent from the USER_AGENTS list."""
     return random.choice(USER_AGENTS)
 
+from blacklist import is_blacklisted, manage_blacklist
+
+# Add an option to manage the blacklist in your script
+def prompt_for_blacklist():
+    """Prompt user to manage the blacklist."""
+    while True:
+        manage_choice = input("Would you like to manage the blacklist? (yes/no): ").strip().lower()
+        if manage_choice == 'yes':
+            manage_blacklist()
+            return
+        elif manage_choice == 'no':
+            return
+        else:
+            print("Invalid input. Please type 'yes' or 'no'.")
+
+# Integrate blacklist check in crawl_website function
 def crawl_website(url, visited_links, links_to_visit, original_tld):
     """Crawl a website and extract all links matching the original TLD."""
     global total_bandwidth
+
+    parsed_url = urlparse(url)
+    domain = parsed_url.netloc
+
+    if is_blacklisted(domain):
+        print(Fore.YELLOW + f"Skipping blacklisted domain: {domain}")
+        return False
+
     try:
         headers = {"User-Agent": get_random_user_agent()}
         response = requests.get(url, headers=headers, timeout=2.69)
@@ -161,11 +172,16 @@ def crawl_website(url, visited_links, links_to_visit, original_tld):
 
         for a_tag in soup.find_all('a', href=True):
             href = a_tag['href']
-            if any(href.endswith(ext) for ext in ['.ico', '.png', '.jpg', '.webp', '.webm', '.pdf', '.gif', '.doc', '.docx', '.svg', '.iso', '.ts', '.srt', '.jpeg', '.json', '.onion', '.i2p', '.safetensors', '.rar', '.zip', '.gguf', '.ggml', '.shp', '.gif', '.avi', '.mp3', '.wav', '.mkv', '.mov', '.heif', '.heic', '.txt', '.xml', '.js', '.m4b', '.mp4', '.m4a', '.flac', '.ogg', '.opus', '.avif', '.hc', '.tc', '.xyz', '.exe', '.msi', '.tar', '.7z', '.tif', '.css', '.csv']):
+            if any(href.endswith(ext) for ext in [...]):  # Keep your existing file extension check here
                 continue  
 
             full_url = urljoin(url, href)
             parsed_url = urlparse(full_url)
+            domain = parsed_url.netloc
+
+            if is_blacklisted(domain):
+                print(Fore.YELLOW + f"Skipping blacklisted domain: {domain}")
+                continue
 
             if parsed_url.scheme in ('http', 'https') and parsed_url.netloc.endswith(original_tld):
                 clean_url = parsed_url.scheme + '://' + parsed_url.netloc + parsed_url.path
@@ -177,6 +193,10 @@ def crawl_website(url, visited_links, links_to_visit, original_tld):
         return False  
 
     return True  
+
+# Before crawling, allow the user to manage the blacklist
+prompt_for_blacklist()
+
 
 args = parse_arguments()
 if args.help:
