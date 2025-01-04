@@ -186,7 +186,16 @@ def crawl_website(url, visited_links, links_to_visit, original_tld):
 
         for a_tag in soup.find_all('a', href=True):
             href = a_tag['href']
-            if any(href.endswith(ext) for ext in [...]):  # Keep your existing file extension check here
+            if any(href.endswith(ext) for ext in (
+              '.ico', '.png', '.jpg', '.webp', '.webm', '.pdf', '.gif',
+                 '.doc', '.docx', '.svg', '.iso', '.ts', '.srt', '.jpeg',
+                 '.json', '.onion', '.i2p', '.safetensors', '.rar', '.zip',
+                 '.gguf', '.ggml', '.shp', '.gif', '.avi', '.mp3', '.wav',
+                 '.mkv', '.mov', '.heif', '.heic', '.txt', '.xml', '.js',
+                 '.m4b', '.mp4', '.m4a', '.flac', '.ogg', '.opus', '.avif',
+                 '.hc', '.tc', '.xyz', '.exe', '.msi', '.tar', '.7z', '.tif',
+                 '.css', '.csv'
+             )):
                 continue  
 
             full_url = urljoin(url, href)
