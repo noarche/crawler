@@ -1,0 +1,12 @@
+services:
+  noisy:
+    image: torquetraction/crawler:latest
+    container_name: crawler
+    restart: unless-stopped
+    volumes:
+       - ./sites_found.txt:/sites_found.txt
+       - ./blacklist.txt:/blacklist.txt
+ #     - ./output_links.txt:/app/output_links.txt  # Mount the output_links.txt file to the container's root
+  #    - ./configs:/configs         # Mount ./configs directory to /configs inside the container
+    stdin_open: true
+    tty: true
